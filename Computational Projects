@@ -1,0 +1,220 @@
+/* Ryan Marinelli
+   Engineering Computations
+   05 October 2018
+*/ 
+
+using namespace std; // pre-processor command to allocate memory
+
+#include <iostream> // allows for data to be accessed from a file
+#include <fstream> // allows for data to be sent from the program
+#include <cmath> // allows for math operations
+#include <math.h>  // allows for math operations 
+ 
+  
+
+
+//The formula is m = (n* sumxy - (sumx*sumY)/ sumx^2 - sumx^2) 
+
+
+// Prototyping unctions
+float sumxy();     // Prototyping the function that returns sum of x times y
+float sumx(); // Protopes the function that returns the sum of x 
+float sumy(); // Prototyping the function that returns  the sum of y
+float sum_x_square(); //Prototyping the function that returns sum of x square
+float line(); // prototyping the function that returns the y-intercept
+long residuals (); // protoyping the function that returns the sum of square residuals
+float r_squared(); // prototyping the function that returns the r-squared of the regression line 
+long totalSumOfSquares(); // prototyping the function the returns the sum of squared total error
+void output (); // prototyping function that creates a textfile 
+void get_data (); // protoyping function that opens a textfile
+float do_calc (); // protyping function that returns slope 
+
+float x[100], y [100]; // creates arrays
+
+int i, m, numOfDataPairs;  // declaring varables
+float r;  // declaring variables
+
+ 
+
+            
+            
+ int main () // function that contains the other functions
+ { 
+    get_data(); // calls data into the function 
+    sumxy(); // multiples the sum of x and y 
+    sumx(); // returns some of x
+    sumy(); // returns sum of y
+    sum_x_square(); // takes the x square 
+    do_calc(); // finds slope
+    line(); // uses the slope and data points to find the intercept 
+    residuals (); // calculate the error from predictions 
+    totalSumOfSquares(); // finds the total error
+    r_squared(); // finds the r-squared
+    output(); // creates a textfile with results 
+    system("pause"); // ends program
+    return 0; // used to find faults 
+   
+   }   
+                                                                                                   
+ void get_data() // calls function 
+ {
+         ifstream my_data; // gets access to data file
+         my_data.open("regData.txt"); // opens data file 
+         cout<< " The following is the data set used to make the regression line:"<< endl; // information to user
+         
+           i=0;
+               while(!my_data.eof()) //  while not at the end of file
+             {
+                my_data >> x[i];  my_data >> y[i]; // puts data into arrays
+                cout << x[i]<< " " << " " << i << endl; // stores data 
+                i++;
+             }
+            my_data.close();
+            numOfDataPairs = i - 1;
+           
+  }
+  
+  float sumxy() // calls function
+ {
+        float ans; // stores local variable 
+      
+        ans = 0;  // sets valuable to variable to store results of the loop
+        for (i=0; i<=(numOfDataPairs-1);i++)
+        {
+            ans = (x[i]*y[i]) + ans; // multiples values together
+        }
+         return ans; // returns the product of the sum of x and y arrays
+         
+  }
+  
+ float sumx() // calls function 
+ {
+        float ans; // decalres variable
+        ans = 0; // assigns value to hold values from the loop
+       
+       for (i=0; i<=(numOfDataPairs-1);i++)
+            {
+            ans = x[i] + ans; // sums together x values
+            }
+            return ans;   // returns value of function     
+  }
+  
+  float sumy () // calls function
+   {
+        float ans; // declares variable
+        ans = 0; // sets variable to hold results from loop
+        
+           for (i=0; i<=(numOfDataPairs-1);i++)
+           {
+            ans = y[i] + ans;  // stores the sum of y
+           }
+         return ans; // returns value of function
+           
+   }
+   
+   float sum_x_square() // calls function
+   {
+         float ans; // declares local variables
+         ans = 0.000; // initalizes variable 
+         for (i=0; i <= (numOfDataPairs-1); i++)
+         {
+           ans = ( x[i] * x[i]) +  ans; // takes square of the sum of x
+         }
+           return ans;   // returns value of function
+   }
+float do_calc () // calls function 
+{  
+   // function calls compontent functions.
+   // Casting of variables was nessary because the number of data points was an interger. 
+	m = (((float)numOfDataPairs*sumxy()) - ((float)sumx()*(float)sumy()))/((((float)numOfDataPairs)*sum_x_square()) - pow(sumx(),2));
+    return m; 
+}
+         
+float line() // calls function
+{
+      float intercept ; // declares variable for the intercept  term in " y = mx+b "
+      
+           while ( m == do_calc())    // while the slope is equal to itself        
+           {  
+               intercept = (-(m*x[2] - y[2]));   // solves for the intercept for the line                                            
+                 m++;
+            }
+              return intercept; // returns value of function
+}
+
+
+long residuals() // long data type had to be used since, the data is rather large. 
+
+// formula is ( sum of y-observe - mean)^2
+{
+      long ans; // declaring variable
+      float mean; 
+      
+       mean = (sumy()) /(float)(numOfDataPairs); // finds mean of the data 
+   
+      ans = 0; // initalizes variable
+
+       for (i=0; i<=(numOfDataPairs-1);i++) // For loop will operate on all observations
+        { 
+             ans = ((((35*x[i])- 37.02) -  mean)*(((35*x[i])- 37.02) -  mean)) + ans; // finds the difference in the predicted values and the mean
+                     
+         }
+          return ans;  // Divides by the number of of observations
+         
+}  
+
+
+
+
+long totalSumOfSquares() // long data type used because of the size of the return
+
+// formula is ( Sum of y - mean)^2
+
+{
+       long ans; // data type is long because of the length of the return
+       float mean; // declaring local variables
+       
+       ans = 0; // initializing variables
+       
+       mean = (sumy()) /(float)(numOfDataPairs); // finds means
+      
+       for (i=0; i<=(numOfDataPairs-1);i++)
+           {
+            ans = ((y[i] - mean)*(y[i]-mean)) + ans; // finding the squared total difference        
+            }
+       return ans; // returns the SST      
+}
+
+float r_squared() // calls function
+ {    
+    
+     r =  ((float)residuals())/((float)totalSumOfSquares()) ; // Divides the SSE/SST to find the R-squared
+     return r; // returns the R-squared value 
+    
+  }     
+  
+  void output () // function outputs a textfile 
+     {
+  
+    fstream file; // creates file for output
+    file.open("Marinelli_Assignment_ Five.txt", ios::out); // labels file 
+    
+    // Inputs regression line equation and the R-squared into a file.
+    file << "The formula of the regression line is " << "y" << "=" << do_calc () << "x" << line()<<"."<<"\n The R-squared is " << r_squared() << "." << endl;
+    
+    // Reports results of the regression and the R-squared 
+    cout <<  "\nThe formula of the regression line is " << "y" << "=" << do_calc () << "x" << line()<< "." <<"\nThe R-squared is " << r_squared() << "." << endl;
+    
+    // Provides guidance to the user on how to access the file. 
+    cout << "File was successfully written.\nIt is labeled Marinelli_Assignment_Five.txt. \nThanks!\n " << endl;
+      }                                                              
+    
+              
+        
+          
+          
+          
+          
+          
+          
+          
