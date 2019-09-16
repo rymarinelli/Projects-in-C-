@@ -16,7 +16,7 @@ using namespace std; // pre-processor command to allocate memory
 //The formula is m = (n* sumxy - (sumx*sumY)/ sumx^2 - sumx^2) 
 
 
-// Prototyping unctions
+// Prototyping functions
 float sumxy();     // Prototyping the function that returns sum of x times y
 float sumx(); // Protopes the function that returns the sum of x 
 float sumy(); // Prototyping the function that returns  the sum of y
