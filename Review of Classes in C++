@@ -24,16 +24,16 @@ class Rectangle {
 int main(){
     int length1,length2,width1,width2;
     
-    cout<<"Please input the length of the rectangle";
+    cout<<"Please input the length of the rectangle \n";
     cin >> length1;
     
-    cout<<"Please input the length for the other rectangle";
+    cout<<"Please input the length for the other rectangle \n";
     cin >>length2;
     
-    cout<<"Please input the width of the first rectangle";
+    cout<<"Please input the width of the first rectangle \n";
     cin >> width1;
     
-    cout<<"Please input the width for the other rectangle";
+    cout<<"Please input the width for the other rectangle \n";
     cin >> width2;
     Rectangle rectangleOne(length1, width1);
     Rectangle rectangleTwo(length2, width2);
