@@ -1,0 +1,48 @@
+//Ryan Marinelli
+// Homework 3 
+// Page 222
+// Question 4
+
+#include <iostream> 
+using namespace std;
+
+
+class Rectangle {
+    private:
+        int length;
+        int width;
+    public:
+         Rectangle(int length, int width){
+            this->length = length;
+            this->width = width;
+        }
+        int getArea(){
+            return this->length * this->width;
+        }
+};
+
+int main(){
+    int length1,length2,width1,width2;
+    
+    cout<<"Please input the length of the rectangle";
+    cin >> length1;
+    
+    cout<<"Please input the length for the other rectangle";
+    cin >>length2;
+    
+    cout<<"Please input the width of the first rectangle";
+    cin >> width1;
+    
+    cout<<"Please input the width for the other rectangle";
+    cin >> width2;
+    Rectangle rectangleOne(length1, width1);
+    Rectangle rectangleTwo(length2, width2);
+    
+    
+    if(rectangleOne.getArea() >= rectangleTwo.getArea()){
+       cout<<"The first rectangle is larger and has an area of \n " << rectangleOne.getArea();
+    }
+    else{
+        cout<<"The second rectangle is larger and has an area of \n " <<rectangleTwo.getArea();
+    }
+}
