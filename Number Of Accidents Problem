@@ -1,17 +1,21 @@
-// 
+// Ryan Marinelli 
 // Question 4 Safest Driving Area 
 // pg 373
 
 #include <iostream>
+#include <map>
+#include <set>
 #include <algorithm>
-#include <iterator> 
-#include <map> 
+#include <functional>
+
 
 using namespace std;
 
+// Prototyping function 
 void getNumAccidents();
 void findLowest();
 
+//Base Class
  class Area{
      protected:
         int numOfAccidents;
@@ -20,42 +24,47 @@ void findLowest();
        int getNumAccidents(numOfAccidents)
  }
 
+//Overriding number of Accidents for data from northern area 
   class north: public Area{
       protected:
-        int numOfAccidents;
+        static int numOfAccidents;
         
       public:
        int getNumAccidents(numOfAccidents)
   }
   
+ //Overriding number of Accidents for data from southern area
   class south: public Area{
       protected:
-        int numOfAccidents;
+        static int numOfAccidents;
         
       public:
        int getNumAccidents(numOfAccidents)
   }
   
+  //Overriding number of Accidents for data from eastern area
   class east : public Area{
       protected:
-        int numOfAccidents;
+        static int numOfAccidents;
         
       public:
        int getNumAccidents(numOfAccidents)
   }
   
+  //Overriding number of Accidents for data from western area
   class west: public Area{
       protected:
-        int numOfAccidents;
+       static  int numOfAccidents;
         
       public:
        int getNumAccidents(numOfAccidents)
       
   } 
   
+  //Overriding number of Accidents for data from central area
   class central: public Area{
       protected:
-      int numOfAccidents;
+      static int numOfAccidents;
       
       public:
         int getNumAccidents(numOfAccidents)
@@ -63,54 +72,66 @@ void findLowest();
   
     int main()
   {
+      // Inputs data from north 
       cout << "How many accidents occured in the north\n"
-      cin >> north;
+      cin >> north.numOfAccidents;
       
       cout << "How many accidents occured in the south\n"
-      cin >> south;
+      cin >> south.numOfAccidents;
       
       cout << "How many accidents occured in the east\n"
-      cin >> east;
+      cin >> east.numOfAccidents;
       
       cout << "How many accidents occured in the west\n"
-      cin >> west;
+      cin >> west.numOfAccidents;
       
       cout << "How many accidents occured in the central\n"
-      cin >> central;
+      cin >> central.numOfAccidents;
       
-      if(north == 0)
+      if(north.numOfAccidents == 0)
        {
            cout <<"Please reenter a value for the north\n"
        }
       
-      if(south == 0)
+      if(south.numOfAccidents == 0)
        {
            cout <<"Please reenter a value for the south\n"
        }
       
-      if(east == 0)
+      if(east.numOfAccidents == 0)
        {
            cout <<"Please reenter a value for the east\n"
        }
        
        
-      if(west == 0)
+      if(west.numOfAccidents == 0)
        {
            cout <<"Please reenter a value for the west\n"
        } 
        
-       if(central == 0)
+       if(central.numOfAccidents == 0)
        {
            cout <<"Please reenter a value for the central\n"
        }  
        
-       map<int, String> Map; 
        
-       Map.insert(pair<int,String>(north.getNumAccidents(north),"String"));
-       Map.insert(pair<int,String>(south.getNumAccidents(south),"String"));
-       Map.insert(pair<int,String>(east.getNumAccidents(east),"String"));
-       Map.insert(pair<int,String>(west.getNumAccidents(west),"String"));
-       Map.insert(pair<int,String>(central.getNumAccidents(central),"String"));
+       std::map<std::string, int> Map = { { north.numOfAccidents, north.getNumAccidents() }, { south.numOfAccidents, south.getNumAccidents() },
+			{ east.numOfAccidents, east.getNumAccidents()}, { west.numOfAccidents, west.getNumAccidents()}, {central.numOfAccidents, central.getNumAccidents()};
        
+       typedef std::function<bool(std::pair<std::string, int>, std::pair<std::string, int>)> Comparator;
        
+       Comparator compFunctor =
+			[](std::pair<std::string, int> elem1 ,std::pair<std::string, int> elem2)
+			{
+				return elem1.second < elem2.second;
+			};
+			
+		std::set<std::pair<std::string, int>, Comparator> Map(
+			Map.begin(), mapOfWordCount.end(), compFunctor);
+			
+		for (std::pair<std::string, int> element : setOfWords)
+		std::cout << element.first << " :: " << element.second << std::endl;
+ 
+	    return 0;
+	
   }
