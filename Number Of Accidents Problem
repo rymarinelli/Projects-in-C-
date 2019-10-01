@@ -1,0 +1,50 @@
+// Ryan Marinelli
+// Question 4 Safest Driving Area 
+// pg 373
+
+#include <iostream> 
+using namespace std;
+
+ class Area{
+     protected:
+        int numOfAccidents;
+        
+     public:
+       void getnumOfAccidents(numOfAccidents)
+ }
+
+  class north: public Area{
+      protected:
+        int numOfAccidents;
+        
+      public:
+       void getnumOfAccidents(numOfAccidents)
+  }
+  
+  class south: public Area{
+      protected:
+        int numOfAccidents;
+        
+      public:
+       void getnumOfAccidents(numOfAccidents)
+  }
+  
+  class east : public Area{
+      protected:
+        int numOfAccidents;
+        
+      public:
+       void getnumOfAccidents(numOfAccidents)
+  }
+  
+  class west: public Area{
+      protected:
+        int numOfAccidents;
+        
+      public:
+       void getnumOfAccidents(numOfAccidents)
+      
+  } 
+
+   
+  
