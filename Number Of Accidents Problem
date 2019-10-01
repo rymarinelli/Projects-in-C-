@@ -1,16 +1,23 @@
-// Ryan Marinelli
+// 
 // Question 4 Safest Driving Area 
 // pg 373
 
-#include <iostream> 
+#include <iostream>
+#include <algorithm>
+#include <iterator> 
+#include <map> 
+
 using namespace std;
+
+void getNumAccidents();
+void findLowest();
 
  class Area{
      protected:
         int numOfAccidents;
         
      public:
-       void getnumOfAccidents(numOfAccidents)
+       int getNumAccidents(numOfAccidents)
  }
 
   class north: public Area{
@@ -18,7 +25,7 @@ using namespace std;
         int numOfAccidents;
         
       public:
-       void getnumOfAccidents(numOfAccidents)
+       int getNumAccidents(numOfAccidents)
   }
   
   class south: public Area{
@@ -26,7 +33,7 @@ using namespace std;
         int numOfAccidents;
         
       public:
-       void getnumOfAccidents(numOfAccidents)
+       int getNumAccidents(numOfAccidents)
   }
   
   class east : public Area{
@@ -34,7 +41,7 @@ using namespace std;
         int numOfAccidents;
         
       public:
-       void getnumOfAccidents(numOfAccidents)
+       int getNumAccidents(numOfAccidents)
   }
   
   class west: public Area{
@@ -42,9 +49,68 @@ using namespace std;
         int numOfAccidents;
         
       public:
-       void getnumOfAccidents(numOfAccidents)
+       int getNumAccidents(numOfAccidents)
       
   } 
-
-   
   
+  class central: public Area{
+      protected:
+      int numOfAccidents;
+      
+      public:
+        int getNumAccidents(numOfAccidents)
+  }
+  
+    int main()
+  {
+      cout << "How many accidents occured in the north\n"
+      cin >> north;
+      
+      cout << "How many accidents occured in the south\n"
+      cin >> south;
+      
+      cout << "How many accidents occured in the east\n"
+      cin >> east;
+      
+      cout << "How many accidents occured in the west\n"
+      cin >> west;
+      
+      cout << "How many accidents occured in the central\n"
+      cin >> central;
+      
+      if(north == 0)
+       {
+           cout <<"Please reenter a value for the north\n"
+       }
+      
+      if(south == 0)
+       {
+           cout <<"Please reenter a value for the south\n"
+       }
+      
+      if(east == 0)
+       {
+           cout <<"Please reenter a value for the east\n"
+       }
+       
+       
+      if(west == 0)
+       {
+           cout <<"Please reenter a value for the west\n"
+       } 
+       
+       if(central == 0)
+       {
+           cout <<"Please reenter a value for the central\n"
+       }  
+       
+       map<int, String> Map; 
+       
+       Map.insert(pair<int,String>(north.getNumAccidents(north),"String"));
+       Map.insert(pair<int,String>(south.getNumAccidents(south),"String"));
+       Map.insert(pair<int,String>(east.getNumAccidents(east),"String"));
+       Map.insert(pair<int,String>(west.getNumAccidents(west),"String"));
+       Map.insert(pair<int,String>(central.getNumAccidents(central),"String"));
+       
+       
+  }
