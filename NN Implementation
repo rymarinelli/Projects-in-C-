@@ -1,0 +1,288 @@
+// Neural Network Implementation 
+// CIS235 
+// Ryan Marinelli
+
+// External resources were leveraged due to aid in the Implementation:
+// http://galaxy.agh.edu.pl/~vlsi/AI/backp_t_en/backprop.html
+// https://www.reddit.com/r/MachineLearning/comments/3mdvxv/neural_net_in_c_for_absolute_beginners_super_easy/
+// Resources provided guidance and instruction on advanced Implmentation of algroithms in C++
+
+// For simplicity and ease of evaluation. This program is more of a skeletion 
+// of a neural network. No actual data will be trained, but all the functional 
+// compontentions are here. Otherwise, there would be some configuration needed.
+// Instead, the tester in main will provide feedback that nodes are being 
+// created and formatted correctly should data be added.
+
+#include <vector>  // For vectorized operations
+#include <iostream> // cout
+#include <cstdlib> // Random number 
+#include <cassert> //Provides exception handling 
+#include <cmath> // Needed for tanh function
+#include <fstream> //File writing
+#include <sstream>
+
+using namespace std;
+
+
+
+struct Connection //Used to help calculate bias 
+{
+    double weight; // The weight of each node
+    double deltaWeight; // the change of the weight 
+};
+
+
+class Neuron; //Forward reference, included for mostly organization
+
+typedef vector<Neuron> Layer; // Vector of class Neuron
+                              // A group of neuron froms a layer
+                              // There are 3 kinds of layers to a 
+                              // neural network an input layer, an activiation layer
+                              // and an output layer 
+class Neuron
+{
+public:
+    Neuron(unsigned numOutputs, unsigned myIndex); // Neuron constructor
+                                                    // takes the number of outputs to the next layer and index of current neuron
+                                                    
+    void setOutputVal(double val) { m_outputVal = val; } // Helper method for calculations
+    double getOutputVal(void) const { return m_outputVal; } //Accessor methods for output
+    void feedForward(const Layer &prevLayer); // Helper method for implementing propergation algorithms
+    void calcOutputGradients(double targetVal); // Calculates gradident given output layers
+    void calcHiddenGradients(const Layer &nextLayer); // Calculates gradients for hidden layers
+    void updateInputWeights(Layer &prevLayer); //  Calculates the gradient from the input
+
+private:
+    static double eta;   // Parameter for training performance
+    static double alpha; // Parameter for momentum
+    static double transferFunction(double x); // Activation Function
+    static double transferFunctionDerivative(double x); // Derivative to help calculate bias
+    static double randomWeight(void) { return rand() / double(RAND_MAX); } // Used for starting the network. It is the baseline
+    double sumDOW(const Layer &nextLayer) const; // Helper function for calculating error rates
+    double m_outputVal; // The output value
+    vector<Connection> m_outputWeights; // Strength of weights from the Connection struct.
+    unsigned m_myIndex; // Index used for calculations
+    double m_gradient; // gradient from training
+};
+
+double Neuron::eta = 0.15;    // Learning rate 
+double Neuron::alpha = 0.5;   // Momentum
+
+// Updates the input based on the previous layer of neuron
+void Neuron::updateInputWeights(Layer &prevLayer)
+{
+    for (unsigned n = 0; n < prevLayer.size(); ++n) { // For all the nodes in the previous layer 
+        Neuron &neuron = prevLayer[n]; // reference to previous layer
+        double oldDeltaWeight = neuron.m_outputWeights[m_myIndex].deltaWeight; // Find the difference in weights between the current layer
+                                                                               //  to the previous layer's nodes
+        double newDeltaWeight =
+                // It is the indivudal input determined by the gradient and training rate:
+                eta
+                * neuron.getOutputVal()
+                * m_gradient
+                // Plus the momentium and part the weight of the previous layer.
+                + alpha
+                * oldDeltaWeight;
+
+        neuron.m_outputWeights[m_myIndex].deltaWeight = newDeltaWeight; // The change in weight based on changes of the current neuron
+        neuron.m_outputWeights[m_myIndex].weight += newDeltaWeight; // 
+    }
+}
+
+double Neuron::sumDOW(const Layer &nextLayer) const // Summation of the error to feed into the bias term
+{
+    double sum = 0.0;
+
+
+    for (unsigned n = 0; n < nextLayer.size() - 1; ++n) { // For each node not including the bias
+        sum += m_outputWeights[n].weight * nextLayer[n].m_gradient; // add the weights including the effect gradient to calculate bias 
+    }
+
+    return sum;
+}
+
+void Neuron::calcHiddenGradients(const Layer &nextLayer) //Calculates the adjustment for each layer of node
+{
+    double dow = sumDOW(nextLayer); // the sum of the errors between layer 
+    m_gradient = dow * Neuron::transferFunctionDerivative(m_outputVal); // Multipled by the deriative of the activation function
+                                                                        // to determine the next hidden layer's gradient
+}
+
+void Neuron::calcOutputGradients(double targetVal) // Used to calculate gradients, it is the rate of change between difference in layers
+{
+    double delta = targetVal - m_outputVal;  // Error in reaching target value
+    m_gradient = delta * Neuron::transferFunctionDerivative(m_outputVal); // the rate of change of the tahn activiation function
+}
+
+double Neuron::transferFunction(double x)
+{
+    return tanh(x); // Transforms data to fit function to compress input data. 
+                    // This is a standard function to use as it is bounded between[-1,1]
+                    // Very smooth function, it has nice properties
+                    // Must use cmath to access 
+}
+
+double Neuron::transferFunctionDerivative(double x)
+{
+   
+    return 1.0 - x * x;  // The derivative of tanh 
+}
+
+void Neuron::feedForward(const Layer &prevLayer) // Feeds data from from previous outputs/inputs
+{                                                // Gets the bias node of the previous layer 
+    double sum = 0.0;
+
+    for (unsigned n = 0; n < prevLayer.size(); ++n) { // For each node in the previous layer
+        sum += prevLayer[n].getOutputVal() * // Add the output values
+                prevLayer[n].m_outputWeights[m_myIndex].weight; // and get the weights
+    }
+
+    m_outputVal = Neuron::transferFunction(sum); // Compress the summation using tanh to determine the output
+}
+
+Neuron::Neuron(unsigned numOutputs, unsigned myIndex)
+{
+    for (unsigned c = 0; c < numOutputs; ++c) { // For the number of connections
+        m_outputWeights.push_back(Connection()); // push the weights of the nodes to the layer
+        m_outputWeights.back().weight = randomWeight(); //Gets the weights 
+    }
+
+    m_myIndex = myIndex; // Assigns index to the private data of the Neuron class
+}
+
+class Net
+{
+public:
+    Net(const vector<unsigned> &topology); // Constructor, takes input data from reference variable
+    void feedForward(const vector<double> &inputVals); // Feeds data through by reference
+    void backProp(const vector<double> &targetVals); // Helper function to conduct backpropergation algorithm
+    void getResults(vector<double> &resultVals) const; //Accessor Function
+    double getRecentAverageError(void) const { return m_recentAverageError; } //Helper function 
+
+private:
+    vector<Layer> m_layers; // Easier to subset  m_layers[layerNum][neuronNum]
+    double m_error; // Error of a particular iteration
+    double m_recentAverageError; //Smoothing parameter
+    static double m_recentAverageSmoothingFactor; // Smoothing parameter
+};
+
+
+double Net::m_recentAverageSmoothingFactor = 100.0; // Should data be added, this is the number of training samples to average over 
+
+
+void Net::getResults(vector<double> &resultVals) const // Gets the results per layer
+{
+    resultVals.clear(); //Clears results to evaluate current layer
+
+    for (unsigned n = 0; n < m_layers.back().size() - 1; ++n) { // For the size of the current layer
+        resultVals.push_back(m_layers.back()[n].getOutputVal()); // Push back the output values to be evaluated in results
+    }
+}
+
+void Net::backProp(const vector<double> &targetVals) // Backpropergation algorithm 
+{
+    // Calculates the root-mean squared-error 
+    Layer &outputLayer = m_layers.back(); // Gets the previous layer
+    m_error = 0.0;
+
+    for (unsigned n = 0; n < outputLayer.size() - 1; ++n) { //For each node not including the bias in the output
+        double delta = targetVals[n] - outputLayer[n].getOutputVal(); // find the difference for the target value
+        m_error += delta * delta; // sum together the errors
+    }
+    m_error /= outputLayer.size() - 1; // get average error squared
+    m_error = sqrt(m_error); // RMS
+
+    // Implement a recent average measurement
+
+    m_recentAverageError =
+            (m_recentAverageError * m_recentAverageSmoothingFactor + m_error) // For local errors of the function
+            / (m_recentAverageSmoothingFactor + 1.0);                         // Eases computation 
+
+
+
+    for (unsigned n = 0; n < outputLayer.size() - 1; ++n) { //For each node in the output layer not including the bias
+        outputLayer[n].calcOutputGradients(targetVals[n]); //Get the gradients of each layer
+    }
+
+    // Calculate hidden layer gradients
+
+    for (unsigned layerNum = m_layers.size() - 2; layerNum > 0; --layerNum) { // For layers not including the input or output layer
+        Layer &hiddenLayer = m_layers[layerNum]; // Reference the current layer
+        Layer &nextLayer = m_layers[layerNum + 1]; // Reference the next layer
+
+        for (unsigned n = 0; n < hiddenLayer.size(); ++n) { //For the number of hidden layers
+            hiddenLayer[n].calcHiddenGradients(nextLayer); // Get the gradients 
+        }
+    }
+
+
+    for (unsigned layerNum = m_layers.size() - 1; layerNum > 0; --layerNum) { //For each layer's output from the 1st hidden layer to output
+        Layer &layer = m_layers[layerNum]; // Reference current layer number
+        Layer &prevLayer = m_layers[layerNum - 1]; // Reference previous layer to update 
+
+        for (unsigned n = 0; n < layer.size() - 1; ++n) { // For nodes in layer, 
+            layer[n].updateInputWeights(prevLayer); //Update bias based on the previous layer
+        }
+    }
+}
+
+void Net::feedForward(const vector<double> &inputVals)//Feeds data through the network
+{
+    assert(inputVals.size() == m_layers[0].size() - 1); // Check to determine the shape of the data
+
+    
+    for (unsigned i = 0; i < inputVals.size(); ++i) { //Assigns input values from the first layer to neurons 
+        m_layers[0][i].setOutputVal(inputVals[i]); 
+    }
+
+    // forward propagate
+    for (unsigned layerNum = 1; layerNum < m_layers.size(); ++layerNum) { //Starting from the input layer, until the output layer
+        Layer &prevLayer = m_layers[layerNum - 1]; //Set the reference to fill data for the last activation layer
+        for (unsigned n = 0; n < m_layers[layerNum].size() - 1; ++n) { //For layers not include the output,
+            m_layers[layerNum][n].feedForward(prevLayer); // Fill the data for training the network
+        }
+    }
+}
+
+Net::Net(const vector<unsigned> &topology) //Getting the set of data 
+{
+    unsigned numLayers = topology.size(); //Number of layers
+    for (unsigned layerNum = 0; layerNum < numLayers; ++layerNum) { // for layers not including the input layer, push the data back 
+        m_layers.push_back(Layer());
+        unsigned numOutputs = layerNum == topology.size() - 1 ? 0 : topology[layerNum + 1]; // If the layer is the input layer then there are no layers yet. 
+                                                                                            // Thus, zero layers are pushed back. If any other layer,
+                                                                                            // push back the output for the nodes of the current layer
+                                                                                            //and one node for the bias.
+                                                                                            
+                                                                                     
+        for (unsigned neuronNum = 0; neuronNum <= topology[layerNum]; ++neuronNum) { // For each neuron in the layer
+            m_layers.back().push_back(Neuron(numOutputs, neuronNum)); // Push back the bias for each neuron in the layer
+            cout << "Made a Neuron!" << endl; //Confirms Neurons are correctly made in the right shape
+        }
+
+        // Force the bias node's output to 1.0 (it was the last neuron pushed in this layer):
+        m_layers.back().back().setOutputVal(1.0);
+    }
+}
+
+
+
+
+int main()
+{
+   
+    // Fill in basic data to determine the shape of the input and to test 
+    vector<unsigned> topology;
+    topology.push_back(3);
+    topology.push_back(2);
+    topology.push_back(1);
+    
+    Net myNet(topology);
+
+    vector<double> inputVals, targetVals, resultVals;
+    int trainingPass = 0; // Place holder for the data 
+
+   
+
+    cout << endl << "Done" << endl; //Confirmation 
+}
